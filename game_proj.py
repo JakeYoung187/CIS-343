@@ -116,11 +116,11 @@ class Location():
 
 class House():
 	population = []
-	species = ['Zombie', 'Vampire', 'Ghoul', 'Werewolf']
+	species = ['Zombie', 'Vampire', 'Ghoul', 'Werewolf','Person']
 	loc_type = 'House'
 	def __init__(self):
 		for i in range(random.randint(1,5)):
-			enemy = Monster(self.species[random.randint(0,3)])
+			enemy = Monster(self.species[random.randint(0,4)])
 			self.population.append(enemy)
 	def show_monsters(self, house):
 			r = len(house.population)
