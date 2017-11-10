@@ -116,7 +116,7 @@ class Location():
 
 class House():
 	population = []
-	species = ['Zombie', 'Vampire', 'Ghoul', 'Werewolf','Person']
+	species = ['Zombie', 'Vampire', 'Ghoul', 'Werewolf', 'Person']
 	loc_type = 'House'
 	def __init__(self):
 		for i in range(random.randint(1,5)):
