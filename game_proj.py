@@ -54,7 +54,8 @@ class Player:
 	items = []
 	current_location = 0
 	def __init__(self):
-		self.health = random.randint(100, 125)
+		#self.health = random.randint(100, 125)
+		self.health = 300
 		self.attack_value = 5
 		self.current_location = [0, 0]
 		HersheyKiss = Weapon('HersheyKiss', 1, -1)
@@ -130,9 +131,6 @@ class Monster(Observer):
 			self.attack_value = random.randint(0, 40)
 	def attack(self, player, atkvalue):
 		player.health -= atkvalue
-		if(player.health <= 0):
-			#gameover
-			print
 	def change(self, monster):
 		monster.species = 'Healed'
 		monster.health = 100
@@ -197,28 +195,40 @@ class Game():
 
 	def play(self):
 		print '\nThere are walls all around you, but an open door in front of you. Where would you like to go?\n'
-		while(self.end_of_game == 'false'):
+		while(self.end_of_game is 'false'):
 			#print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 			print '\nCommands: n(North), s(South), e(East), w(West)'
 			print 'Health:', self.hero.health
 			print 'Equipped Candy:', self.hero.equipped_weapon.name
 			#print '\nWhat would you like to do?'
 			command = raw_input()
-			self.process_command(command)
+			#self.process_command(command, 0)
 			x = self.hero.current_location[0]
 			y = self.hero.current_location[1]
+			self.process_command(command, self.hood[x][y])
 			self.print_surroundings(self.hero.current_location)
-			if(isinstance(self.hood[x][y], House)):
-				self.hood[x][y].show_monsters(self.hood[x][y])
-				self.fight(self.hero, self.hood[x][y])	
+			#if(isinstance(self.hood[x][y], House)):
+			#	command = raw_input()
+			#	self.process_command(command, self.hood[x][y])
+
+			#	self.hood[x][y].show_monsters(self.hood[x][y])
+				#self.fight(self.hero, self.hood[x][y])	
 					#self.hood[x][y].show_monsters
+			self.game_over()	
+		print 'fuckkkk'
+		if(self.end_of_game is 'loss'):
+			print 'You have died!\n'
+			##
+			print 'Would you like to play again (y/n)\n'
+		if(self.end_of_game is 'win'):
+			print 'YOU WON!\n'
+			print 'You have successfully turned all the monsters back to people!'
 
 	def check_house(self, house):
-		if all(x != 'Healed' for x in house.population):
-			return 0
-		else:
-			return 1
-
+		for x in range(len(house.population)):
+			if(house.population[x].species is not 'Healed'):
+				return 0
+		return 1
 	def fight(self, player, house):
 		temp = 0
 	#while(self.check_house(house) is 0 and player.health > 0):
@@ -228,18 +238,22 @@ class Game():
 			#house.population[x].attack(player)
 		player.attack(house.population)
 		house.population[x].attack(player, temp)
-		#player.attack(house.population[x])
+		#if(player.health <= 0):
+		#	self.end_of_game = 'true'
 
-	def process_command(self, cmd):
+	def process_command(self, cmd, house):
 		if(cmd == 'quit'):
 			exit(0)
 		if(cmd == 'n' or cmd == 's' or cmd == 'e' or cmd == 'w'):
 			self.hero.move(cmd)
 		if(cmd == 'attack'):
-			print
-			#if in a house attack otherwise dont self.hero.attack
+			if(isinstance(house, House)):
+				self.fight(self.hero, house)
+			else:
+				return
+
 	def print_surroundings(self, location):
-		print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+		print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 		if(location == [0, 0]):
 			print 'You are in a garage, there is a road North and a House East'
 		if(location == [0, 1]):
@@ -392,8 +406,18 @@ class Game():
 			print 'You are in a backyard, there is a house West and another backyard South.'
 
 	def game_over(self):
-		print
-		#check houses and health maybe update command or something
+		healed_houses = 0
+		if(self.hero.health <= 0):
+			self.end_of_game = 'loss'
+			
+		for a in range(6):
+			for b in range(6):
+				if(isinstance(self.hood[a][b], House)):
+					if(self.check_house(self.hood[a][b]) is 1):
+						healed_houses += 1
+		if(healed_houses is 10):
+			self.end_of_game = 'win'
+		
 ########################################################################################
 #main method
 ########################################################################################
