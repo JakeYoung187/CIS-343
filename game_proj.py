@@ -1,5 +1,6 @@
 import inspect
 import random
+import re
 from abc import ABCMeta, abstractmethod
 
 ##############################################################
@@ -61,32 +62,56 @@ class Player:
 		HersheyKiss = Weapon('HersheyKiss', 1, -1)
 		self.items.append(HersheyKiss)
 		self.equipped_weapon = HersheyKiss
+		#add rest of weapons
+		SourStraws = Weapon('SourStraws', random.randint(1, 2), 2)
+		self.items.append(SourStraws)
+		ChocolateBars = Weapon('ChocolateBars', random.randint(2, 3), 4)
+		self.items.append(ChocolateBars)
+		NerdBombs = Weapon('NerdBombs', random.randint(3, 5), 1)
+		self.items.append(NerdBombs) 
+
 	def move(self, direction):
 		#game movement
 		if(direction == 'n'):
 			if(self.current_location[1] != 5):
 				self.current_location[1] += 1
 			else:
-				print 'Cannot go in that direction'
+				print 'You cannot go in that direction'
 		if(direction == 's'):
 			if(self.current_location[1] != 0):
 				self.current_location[1] -= 1
 			else:
-				print 'Cannot go in that direction'
+				print 'You cannot go in that direction'
 		if(direction == 'e'):
 			if(self.current_location[0] != 5):
 				self.current_location[0] += 1
 			else:
-				print 'Cannot go in that direction'
+				print 'You cannot go in that direction'
 		if(direction == 'w'):
 			if(self.current_location[0] != 0):
 				self.current_location[0] -= 1
 			else:
-				print 'Cannot go in that direction'
+				print 'You cannot go in that direction'
 	def equip_weapon(self, weapon):
-		self.equipped_weapon = weapon
+		for a in range(len(self.items)):
+			if(self.items[a].name == weapon):
+				self.equipped_weapon = self.items[a]
+
 	def add_weapon(self, weapon):
-		self.items.append(weapon)	
+		self.items.append(weapon)
+	def show_inventory(self):
+		print 'Weapons:'
+		for x in range(len(self.items)):
+			print '  '
+			print self.items[x].name
+			print 'Attack: ', self.items[x].attack_mod
+			if(self.items[x].num_uses < 0):
+				print 'Number of uses: Infinite'
+			else:
+				print 'Number of uses: ', self.items[x].num_uses			
+
+		print '\n\n'
+
 	def drop_weapon(self, weapon):
 		if(weapon == self.items[0]):
 			print 'Cannot drop this weapon.'
@@ -101,6 +126,9 @@ class Player:
 				monsters[i].health -= power
 			monsters[i].change(monsters[i])
 		monsters[0].update(monsters)
+		self.equipped_weapon.num_uses -= 1
+		if(self.equipped_weapon.num_uses == 0):
+			self.drop_weapon(self.equipped_weapon)
 		#for h in range(len(monsters)):
 		#	print len(monsters)
 		#	print monsters[h].species
@@ -197,7 +225,7 @@ class Game():
 		print '\nThere are walls all around you, but an open door in front of you. Where would you like to go?\n'
 		while(self.end_of_game is 'false'):
 			#print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-			print '\nCommands: n(North), s(South), e(East), w(West)'
+			print '\nType help for a list of commands'
 			print 'Health:', self.hero.health
 			print 'Equipped Candy:', self.hero.equipped_weapon.name
 			#print '\nWhat would you like to do?'
@@ -205,7 +233,9 @@ class Game():
 			#self.process_command(command, 0)
 			x = self.hero.current_location[0]
 			y = self.hero.current_location[1]
+			print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 			self.process_command(command, self.hood[x][y])
+			#print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 			self.print_surroundings(self.hero.current_location)
 			#if(isinstance(self.hood[x][y], House)):
 			#	command = raw_input()
@@ -242,18 +272,26 @@ class Game():
 		#	self.end_of_game = 'true'
 
 	def process_command(self, cmd, house):
+		if(cmd == 'i'):
+			self.hero.show_inventory()
+		if(cmd == 'help'):
+			print '\nMovement commands: n(North), s(South), e(East), w(West)'
+			print '\nOther commands: quit, fight, heal (when in a healed house), i (to display inventory), and c (change weapon)\n\n'
 		if(cmd == 'quit'):
 			exit(0)
 		if(cmd == 'n' or cmd == 's' or cmd == 'e' or cmd == 'w'):
 			self.hero.move(cmd)
-		if(cmd == 'attack'):
+		if(cmd == 'fight'):
 			if(isinstance(house, House)):
 				self.fight(self.hero, house)
 			else:
 				return
+		split_cmd = re.split('\s+', cmd)
+		if(split_cmd[0] == 'c'):
+			self.hero.equip_weapon(split_cmd[1])
 
 	def print_surroundings(self, location):
-		print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+		#print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 		if(location == [0, 0]):
 			print 'You are in a garage, there is a road North and a House East'
 		if(location == [0, 1]):
@@ -265,21 +303,21 @@ class Game():
 		if(location == [0, 5]):
 			num_people = 0
 			for i in range(len(self.hood[0][5].population)):
-				if(self.hood[0][5].population[i] == 'Person'):
+				if(self.hood[0][5].population[i] == 'Healed'):
 					num_people += 1
 
 			if(num_people != len(self.hood[0][5].population)):
-				print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+				print 'You enter a house that is filled with ', len(self.hood[0][5].population), ' monsters, will you attack or run?' #run just takes you outside
 			else:
 				print 'You enter a house filled with people!'
 		if(location == [1, 0]):
 			num_people = 0
                         for i in range(len(self.hood[1][0].population)):
-                                if(self.hood[1][0].population[i] == 'Person'):
+                                if(self.hood[1][0].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[1][0].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[1][0].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [1, 1]):
@@ -293,21 +331,21 @@ class Game():
 		if(location == [1, 5]):
 			num_people = 0
                         for i in range(len(self.hood[1][5].population)):
-                                if(self.hood[1][5].population[i] == 'Person'):
+                                if(self.hood[1][5].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[1][5].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[1][5].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [2, 0]):
 			num_people = 0
                         for i in range(len(self.hood[2][0].population)):
-                                if(self.hood[2][0].population[i] == 'Person'):
+                                if(self.hood[2][0].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[2][0].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[2][0].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [2, 1]):
@@ -321,21 +359,21 @@ class Game():
 		if(location == [2, 5]):
 			num_people = 0
                         for i in range(len(self.hood[2][5].population)):
-                                if(self.hood[2][5].population[i] == 'Person'):
+                                if(self.hood[2][5].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[2][5].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[2][5].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [3, 0]):
 			num_people = 0
                         for i in range(len(self.hood[3][0].population)):
-                                if(self.hood[3][0].population[i] == 'Person'):
+                                if(self.hood[3][0].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[3][0].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[3][0].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [3, 1]):
@@ -351,21 +389,21 @@ class Game():
 		if(location == [4, 0]):
 			num_people = 0
                         for i in range(len(self.hood[4][0].population)):
-                                if(self.hood[4][0].population[i] == 'Person'):
+                                if(self.hood[4][0].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[4][0].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[4][0].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [4, 1]):
 			num_people = 0
                         for i in range(len(self.hood[4][1].population)):
-                                if(self.hood[4][1].population[i] == 'Person'):
+                                if(self.hood[4][1].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[4][1].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[4][1].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [4, 2]):
@@ -375,21 +413,21 @@ class Game():
 		if(location == [4, 4]):
 			num_people = 0
                         for i in range(len(self.hood[4][4].population)):
-                                if(self.hood[4][4].population[i] == 'Person'):
+                                if(self.hood[4][4].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[4][4].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[4][4].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [4, 5]):
 			num_people = 0
                         for i in range(len(self.hood[4][5].population)):
-                                if(self.hood[4][5].population[i] == 'Person'):
+                                if(self.hood[4][5].population[i] == 'Healed'):
                                         num_people += 1
 
                         if(num_people != len(self.hood[4][5].population)):
-                                print 'You enter a house that is filled with monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[4][5].population), ' monsters, will you attack or run?' #run just takes you outside
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [5, 0]):
