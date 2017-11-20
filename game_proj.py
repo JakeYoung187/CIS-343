@@ -4,7 +4,8 @@ import re
 from abc import ABCMeta, abstractmethod
 
 ##############################################################
-#Code for Observables
+#The observer class is used to update observers when a change
+#of state takes place.
 #############################################################
 class Observable(object):
  
@@ -25,8 +26,10 @@ class Observable(object):
         def update(self):
                 for observer in self.observers:
                         observer.update()
+
+
 #############################################################
-#Code for Observers
+#The observer class is used to create observers
 #############################################################
 class Observer(object):
 	__metaclass__ = ABCMeta
@@ -34,8 +37,13 @@ class Observer(object):
 	@abstractmethod
 	def update(self):
 		pass
+
+
 #############################################################
-#Weapon class
+#Weapon class creates instances of weapons used by the Player
+#@var name - the name of the weapon
+#@var attack_mod - the attack modifier of the weapon
+#@var num_uses - number of times a weapon can be used
 #############################################################
 class Weapon:
 	name = ''
@@ -45,8 +53,15 @@ class Weapon:
 		self.name = name
 		self.attack_mod = atk
 		self.num_uses = use
+
+
 #############################################################
-#Player class
+#Player class creates an instance of a player for the user to
+#play as in the RPG.
+#@var health - the health of the player
+#@var equipped_weapon - the current equipped weapon
+#@var items - list of weapons held by player
+#@var current_location - current player location
 #############################################################
 class Player:
 	health = 0
@@ -55,8 +70,8 @@ class Player:
 	items = []
 	current_location = 0
 	def __init__(self):
-		#self.health = random.randint(100, 125)
-		self.health = 300
+		self.health = random.randint(100, 125)
+		#self.health = 300
 		self.attack_value = 5
 		self.current_location = [0, 0]
 		HersheyKiss = Weapon('HersheyKiss', 1, -1)
@@ -69,7 +84,12 @@ class Player:
 		self.items.append(ChocolateBars)
 		NerdBombs = Weapon('NerdBombs', random.randint(3, 5), 1)
 		self.items.append(NerdBombs) 
-
+	##
+	#The move method is used to change the players current
+	#location, as well as make sure the player stays in the
+	#bounds of the grid
+	#@param direction - the direction of the move
+	##
 	def move(self, direction):
 		#game movement
 		if(direction == 'n'):
@@ -92,13 +112,25 @@ class Player:
 				self.current_location[0] -= 1
 			else:
 				print 'You cannot go in that direction'
+	##
+	#equip_weapon changes the current weapon the player is using
+	#(used for the 'c' command)
+	#@param weapon - the new equipped weapon
+	##
 	def equip_weapon(self, weapon):
 		for a in range(len(self.items)):
 			if(self.items[a].name == weapon):
 				self.equipped_weapon = self.items[a]
 
-	def add_weapon(self, weapon):
-		self.items.append(weapon)
+	##
+	#add_weapon is never used
+	##
+	#def add_weapon(self, weapon):
+	#	self.items.append(weapon)
+	
+	##
+	#show_inventory prints a list of the players remaining weapons
+	##
 	def show_inventory(self):
 		print 'Weapons:'
 		for x in range(len(self.items)):
@@ -112,6 +144,11 @@ class Player:
 
 		print '\n\n'
 
+	##
+	#drop_weapon drops the desired weapon from the items list,
+	#as well as make sure the HersheyKiss cannot be dropped
+	#@param weapon - the weapon to be dropped
+	##
 	def drop_weapon(self, weapon):
 		if(weapon == self.items[0]):
 			print 'Cannot drop this weapon.'
@@ -119,6 +156,12 @@ class Player:
 		if(self.equipped_weapon == weapon):
 			self.equipped_weapon = self.items[0]
 		self.items.remove(weapon)
+	##
+	#attack allows the player to attack all of the monsters
+	#in the house, and updates the list of monsters in the
+	#house
+	#@param monsters - list of monsters to be attacked
+	##
 	def attack(self, monsters):
 		power = self.attack_value + self.equipped_weapon.attack_mod
 		for i in range(len(monsters)):
@@ -133,8 +176,12 @@ class Player:
 		#	print len(monsters)
 		#	print monsters[h].species
 
+
 ###########################################################################
-#Monster class
+#Monster class creates the monsters to be added into the houses
+#@var health - the health of the monster
+#@var species - the type of monster (zombie, person, etc.)
+#@var attack_value - the amount of damage the can do to the player
 ###########################################################################
 class Monster(Observer):
 	health = 0
@@ -157,18 +204,35 @@ class Monster(Observer):
 		if(species == 'Werewolf'):
 			self.health = 200
 			self.attack_value = random.randint(0, 40)
+	##
+	#attack allows the monsters to attack the player
+	#@param player - instance of the player to be attacked
+	#@param atkvalue - the amount of damage the monster can do
+	##
 	def attack(self, player, atkvalue):
 		player.health -= atkvalue
+	
+	##
+	#change creates the healed people after a monster is destroyed
+	#@param monster - the monster that has been destroyed
+	##
 	def change(self, monster):
 		monster.species = 'Healed'
 		monster.health = 100
 		monster.attack_value = -2
+	##
+	#methods for Observer pattern
+	##
 	def update(self, monsters):
 		pass
 	def add_observer(self, observer):
 		pass
+
+
 #########################################################################
-#House class
+#House class creates an instance of a house on the grid
+#@var population - the monsters 'living' in the house
+#@var species - a list of monster species for random selection
 ########################################################################
 class House(Observable, Observer):
 	population = 'empty'
@@ -180,22 +244,36 @@ class House(Observable, Observer):
 			self.population.append(enemy)
 			enemy.add_observer(self)
 		#print len(self.population)
+
+	##
+	#show_monsters displays the monsters currently in the house
+	#@param house - the house to be searched
+	##
 	def show_monsters(self, house):
 		r = len(house.population)
 		for i in range(r):
 			print house.population[i].species
+	
+	##
+	#method for observer pattern
+	##
 	def update(self, monsters):
 		self.population = monsters
 		#update the health
 
 	def add_observer(self, observer):
 		pass
+
+
+
 ########################################################################
-#Game class
+#Game class creates the game loop
+#@var hero - the users character
+#@var hood - the 'neighborhood' or grid of houses
+#@var end_of_game - variable to show games progress
 ########################################################################
 class Game():
 	hero = Player()
-	#hood = [[Location('Empty') for i in range(6)] for j in range(6)]
         hood = [[0 for i in range(6)] for j in range(6)]
 	end_of_game = 'false'
 	def __init__(self):
@@ -221,6 +299,9 @@ class Game():
 		self.hood[4][5] = House()
 		self.hood[4][5].add_observer(self.hood)
 
+	##
+	#play creates the loop to accept commands from the user
+	##
 	def play(self):
 		print '\nThere are walls all around you, but an open door in front of you. Where would you like to go?\n'
 		while(self.end_of_game is 'false'):
@@ -244,8 +325,7 @@ class Game():
 			#	self.hood[x][y].show_monsters(self.hood[x][y])
 				#self.fight(self.hero, self.hood[x][y])	
 					#self.hood[x][y].show_monsters
-			self.game_over()	
-		print 'fuckkkk'
+			self.game_over()
 		if(self.end_of_game is 'loss'):
 			print 'You have died!\n'
 			##
@@ -254,23 +334,35 @@ class Game():
 			print 'YOU WON!\n'
 			print 'You have successfully turned all the monsters back to people!'
 
+	##
+	#check_house loops through house population to see if any monsters
+	#are still unturned (used for end of game checks)
+	#@param house - the house to be searched
+	##
 	def check_house(self, house):
 		for x in range(len(house.population)):
 			if(house.population[x].species is not 'Healed'):
 				return 0
 		return 1
+	
+	##
+	#fight loops attacks from both the player and the monster until
+	#the monsters are defeated or the players health reaches 0
+	#@param player - the users character
+	#@param house - the house that the player is currently in
+	##
 	def fight(self, player, house):
 		temp = 0
-	#while(self.check_house(house) is 0 and player.health > 0):
 		for x in range(len(house.population)):
 			temp += house.population[x].attack_value
-			#print house.population[x].species
-			#house.population[x].attack(player)
 		player.attack(house.population)
 		house.population[x].attack(player, temp)
-		#if(player.health <= 0):
-		#	self.end_of_game = 'true'
 
+	##
+	#processes the command that the user enters
+	#@param cmd - the command entered
+	#@param house - the house the player is in (used if the player is attacking)
+	##
 	def process_command(self, cmd, house):
 		if(cmd == 'i'):
 			self.hero.show_inventory()
@@ -290,6 +382,10 @@ class Game():
 		if(split_cmd[0] == 'c'):
 			self.hero.equip_weapon(split_cmd[1])
 
+	##
+	#displays the message to inform the player of their current location
+	#@param location - the players current location
+	##
 	def print_surroundings(self, location):
 		#print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 		if(location == [0, 0]):
@@ -307,7 +403,7 @@ class Game():
 					num_people += 1
 
 			if(num_people != len(self.hood[0][5].population)):
-				print 'You enter a house that is filled with ', len(self.hood[0][5].population), ' monsters, will you attack or run?' #run just takes you outside
+				print 'You enter a house that is filled with ', len(self.hood[0][5].population), ' monsters, will you attack or run?'
 			else:
 				print 'You enter a house filled with people!'
 		if(location == [1, 0]):
@@ -317,7 +413,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[1][0].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[1][0].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[1][0].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [1, 1]):
@@ -335,7 +431,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[1][5].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[1][5].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[1][5].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [2, 0]):
@@ -345,7 +441,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[2][0].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[2][0].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[2][0].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [2, 1]):
@@ -363,7 +459,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[2][5].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[2][5].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[2][5].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [3, 0]):
@@ -373,7 +469,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[3][0].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[3][0].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[3][0].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [3, 1]):
@@ -393,7 +489,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[4][0].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[4][0].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[4][0].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [4, 1]):
@@ -403,7 +499,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[4][1].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[4][1].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[4][1].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [4, 2]):
@@ -417,7 +513,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[4][4].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[4][4].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[4][4].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [4, 5]):
@@ -427,7 +523,7 @@ class Game():
                                         num_people += 1
 
                         if(num_people != len(self.hood[4][5].population)):
-                                print 'You enter a house that is filled with ', len(self.hood[4][5].population), ' monsters, will you attack or run?' #run just takes you outside
+                                print 'You enter a house that is filled with ', len(self.hood[4][5].population), ' monsters, will you attack or run?'
                         else:
                                 print 'You enter a house filled with people!'
 		if(location == [5, 0]):
@@ -443,6 +539,9 @@ class Game():
 		if(location ==[5, 5]):
 			print 'You are in a backyard, there is a house West and another backyard South.'
 
+	##
+	#game_over checks the status of the game to see if it should end
+	##
 	def game_over(self):
 		healed_houses = 0
 		if(self.hero.health <= 0):
@@ -455,7 +554,9 @@ class Game():
 						healed_houses += 1
 		if(healed_houses is 10):
 			self.end_of_game = 'win'
-		
+	
+
+	
 ########################################################################################
 #main method
 ########################################################################################
