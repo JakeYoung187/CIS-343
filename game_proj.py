@@ -71,8 +71,7 @@ class Player:
 	current_location = 0
 	def __init__(self):
 		self.health = random.randint(100, 125)
-		#self.health = 300
-		self.attack_value = 5
+		self.attack_value = random.randint(5, 20)
 		self.current_location = [0, 0]
 		HersheyKiss = Weapon('HersheyKiss', 1, -1)
 		self.items.append(HersheyKiss)
@@ -313,8 +312,9 @@ class Game():
 			#self.print_surroundings(self.hero.current_location)
 			#self.game_over()
 			if(command == 'fight'):
-				if(self.hero.health > 0):
-					print 'You have successfully defeated the monsters inside of the house!'
+				if(isinstance(self.hood[x][y], House)):
+					if(self.hero.health > 0):
+						print 'You have successfully defeated the monsters inside of the house!'
 			self.print_surroundings(self.hero.current_location)
 			self.game_over()
 		if(self.end_of_game is 'loss'):
