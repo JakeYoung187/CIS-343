@@ -55,6 +55,21 @@ class Weapon:
 		self.name = name
 		self.attack_mod = atk
 		self.num_uses = use
+	##
+	#Getters and setters
+	##
+	def get_weapon_name(self):
+		return self.name
+	def set_weapon_name(self, name):
+		self.name = name
+	def get_attack_mod(self):
+		return self.attack_mod
+	def set_attack_mod(self, atk):
+		self.attack_mod = atk
+	def get_num_uses(self):
+		return self.num_uses
+	def set_num_uses(self, uses):
+		self.num_uses = uses
 
 
 #############################################################
@@ -96,22 +111,30 @@ class Player:
 			if(self.current_location[1] != 5):
 				self.current_location[1] += 1
 			else:
+				print '********************************'
 				print 'You cannot go in that direction'
+				print '********************************'
 		if(direction == 's'):
 			if(self.current_location[1] != 0):
 				self.current_location[1] -= 1
 			else:
-				print 'You cannot go in that direction'
+				print '********************************'
+                                print 'You cannot go in that direction'
+                                print '********************************'
 		if(direction == 'e'):
 			if(self.current_location[0] != 5):
 				self.current_location[0] += 1
 			else:
-				print 'You cannot go in that direction'
+				print '********************************'
+                                print 'You cannot go in that direction'
+                                print '********************************'
 		if(direction == 'w'):
 			if(self.current_location[0] != 0):
 				self.current_location[0] -= 1
 			else:
-				print 'You cannot go in that direction'
+				print '********************************'
+                                print 'You cannot go in that direction'
+                                print '********************************'
 	##
 	#equip_weapon changes the current weapon the player is using
 	#(used for the 'c' command)
@@ -119,7 +142,7 @@ class Player:
 	##
 	def equip_weapon(self, weapon):
 		for a in range(len(self.items)):
-			if(self.items[a].name == weapon):
+			if(self.items[a].get_weapon_name() == weapon):
 				self.equipped_weapon = self.items[a]
 	
 	##
@@ -129,12 +152,12 @@ class Player:
 		print 'Weapons:'
 		for x in range(len(self.items)):
 			print '  '
-			print self.items[x].name
-			print 'Attack: ', self.items[x].attack_mod
-			if(self.items[x].num_uses < 0):
+			print self.items[x].get_weapon_name()
+			print 'Attack: ', self.items[x].get_attack_mod()
+			if(self.items[x].get_num_uses() < 0):
 				print 'Number of uses: Infinite'
 			else:
-				print 'Number of uses: ', self.items[x].num_uses			
+				print 'Number of uses: ', self.items[x].get_num_uses()	
 
 		print '\n\n'
 
@@ -157,16 +180,36 @@ class Player:
 	#@param monsters - list of monsters to be attacked
 	##
 	def attack(self, monsters):
-		power = self.attack_value + self.equipped_weapon.attack_mod
+		power = self.attack_value + self.equipped_weapon.get_attack_mod()
 		for i in range(len(monsters)):
-			while(monsters[i].health > 0):
-				monsters[i].health -= power
-			if(monsters[i].species != 'Person' and monsters[i].species != 'Healed'):
-				self.equipped_weapon.num_uses -= 1
-				if(self.equipped_weapon.num_uses == 0):
+			while(monsters[i].get_health() > 0):
+				health = monsters[i].get_health()
+				monsters[i].set_health(health - power)
+			if(monsters[i].get_species() != 'Person' and monsters[i].get_species() != 'HealedPerson'):
+				num = self.equipped_weapon.get_num_uses() 
+				self.equipped_weapon.set_num_uses(num - 1)
+				if(self.equipped_weapon.get_num_uses() == 0):
 					self.drop_weapon(self.equipped_weapon)
 			monsters[i].change(monsters[i])
 		monsters[0].update(monsters)
+	
+	##
+	#Getters and setters
+	##
+	def get_health(self):
+		return self.health
+	def set_health(self, health):
+		self.health = health
+	def get_equipped_weapon(self):
+		return self.equipped_weapon
+	def get_attack_value(self):
+		return self.attack_value
+	def set_attack_value(self, atk):
+		self.attack_value = atk
+	def get_current_location(self):
+		return self.current_location
+	def set_current_location(self, loc):
+		self.current_location = loc
 			
 
 ###########################################################################
@@ -202,14 +245,15 @@ class Monster(Observer):
 	#@param atkvalue - the amount of damage the monster can do
 	##
 	def attack(self, player, atkvalue):
-		player.health -= atkvalue
+		health = player.get_health()
+		player.set_health(health - atkvalue)
 	
 	##
 	#change creates the healed people after a monster is destroyed
 	#@param monster - the monster that has been destroyed
 	##
 	def change(self, monster):
-		monster.species = 'Healed'
+		monster.species = 'HealedPerson'
 		monster.health = 100
 		monster.attack_value = -2
 	##
@@ -219,14 +263,29 @@ class Monster(Observer):
 		pass
 	def add_observer(self, observer):
 		pass
-
+	
+	##
+	#Getters and setters
+	##
+	def get_health(self):
+		return self.health
+	def set_health(self, health):
+		self.health = health
+	def get_attack_value(self):
+		return self.attack_value
+	def set_attack_value(self, atk):
+		self.attack_value = atk
+	def get_species(self):
+		return self.species
+	def set_species(self, species):
+		self.species = species
 
 #########################################################################
 #House class creates an instance of a house on the grid
 #@var population - the monsters 'living' in the house
 #@var species - a list of monster species for random selection
 ########################################################################
-class House(Observable, Observer):
+class House(Observable):
 	population = 'empty'
 	species = ['Zombie', 'Vampire', 'Ghoul', 'Werewolf', 'Person']
 	def __init__(self):
@@ -243,8 +302,11 @@ class House(Observable, Observer):
 	##
 	def show_monsters(self, house):
 		r = len(house.population)
+		print '******************************'
+		print 'Monsters currently in the house:'
 		for i in range(r):
-			print house.population[i].species
+			print house.population[i].get_species()
+		print '******************************'
 	
 	##
 	#method for observer pattern
@@ -254,7 +316,14 @@ class House(Observable, Observer):
 
 	def add_observer(self, observer):
 		pass
-
+	
+	##
+	#Getter and setter (MAY NOT EVEN BE NEEDED KINDA SEEMS STUPID
+	##
+	def get_monster(x):
+		return self.population[x]
+	def set_monster(x, monster):
+		self.population[x] = monster
 
 
 ########################################################################
@@ -296,7 +365,7 @@ class Game():
 	def play(self):
 		print '\nThere are walls all around you, but an open door in front of you. Where would you like to go?\n'
 		while(self.end_of_game is 'false'):
-			print '\nType help for a list of commands'
+			print '\n**Type help for a list of commands**'
 			print 'Health:', self.hero.health
 			print 'Equipped Candy:', self.hero.equipped_weapon.name
 			command = raw_input()
@@ -304,8 +373,6 @@ class Game():
 			y = self.hero.current_location[1]
 			print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 			self.process_command(command, self.hood[x][y])
-			#self.print_surroundings(self.hero.current_location)
-			#self.game_over()
 			if(command == 'fight'):
 				if(isinstance(self.hood[x][y], House)):
 					if(self.hero.health > 0):
@@ -325,7 +392,7 @@ class Game():
 	##
 	def check_house(self, house):
 		for x in range(len(house.population)):
-			if(house.population[x].species is not 'Healed'):
+			if(house.population[x].species is not 'HealedPerson'):
 				return 0
 		return 1
 	
@@ -386,13 +453,13 @@ class Game():
 		if(location == [0, 4]):
 			print 'You are at the corner of a road that coninues South or East, there is a house directly North.'
 		if(location == [0, 5]):
-			if(self.hood[0][5].population[0].species == 'Healed'):
+			if(self.hood[0][5].population[0].species == 'HealedPerson'):
 				print 'You enter a house filled with people!'
 			else:
 				print 'You enter a house that is filled with', len(self.hood[0][5].population), 'monsters, will you attack or run?'
 			self.hood[0][5].show_monsters(self.hood[0][5])
 		if(location == [1, 0]):
-			if(self.hood[1][0].population[0].species == 'Healed'):
+			if(self.hood[1][0].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with ', len(self.hood[1][0].population), ' monsters, will you attack or run?'
@@ -406,13 +473,13 @@ class Game():
 		if(location == [1, 4]):
 			print 'You are in a road that continues East and West, there is a house North, and a park South'
 		if(location == [1, 5]):
-			if(self.hood[1][5].population[0].species == 'Healed'):
+			if(self.hood[1][5].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with', len(self.hood[1][5].population), 'monsters, will you attack or run?'
 			self.hood[1][5].show_monsters(self.hood[1][5])
 		if(location == [2, 0]):
-			if(self.hood[2][0].population[0].species == 'Healed'):
+			if(self.hood[2][0].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with', len(self.hood[2][0].population), 'monsters, will you attack or run?'
@@ -426,13 +493,13 @@ class Game():
 		if(location == [2, 4]):
 			print 'You are on a road that continues East and West, there is a house North, or a park South'
 		if(location == [2, 5]):
-			if(self.hood[2][5].population[0].species == 'Healed'):
+			if(self.hood[2][5].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with', len(self.hood[2][5].population), 'monsters, will you attack or run?'
 			self.hood[2][5].show_monsters(self.hood[2][5])
 		if(location == [3, 0]):
-			if(self.hood[3][0].population[0].species == 'Healed'):
+			if(self.hood[3][0].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with', len(self.hood[3][0].population), 'monsters, will you attack or run?'
@@ -448,13 +515,13 @@ class Game():
 		if(location == [3, 5]):
 			print 'You are on a road that continues South, there are houses East and West.'
 		if(location == [4, 0]):
-			if(self.hood[4][0].population[0].species == 'Healed'):
+			if(self.hood[4][0].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with', len(self.hood[4][0].population), 'monsters, will you attack or run?'
 			self.hood[4][0].show_monsters(self.hood[4][0])
 		if(location == [4, 1]):
-			if(self.hood[4][1].population[0].species == 'Healed'):
+			if(self.hood[4][1].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with', len(self.hood[4][1].population), 'monsters, will you attack or run?'
@@ -464,13 +531,13 @@ class Game():
 		if(location == [4, 3]):
 			print 'You are in a cemetary that continues South and East, there is a house North, and a road west.'
 		if(location == [4, 4]):
-			if(self.hood[4][4].population[0].species == 'Healed'):
+			if(self.hood[4][4].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with', len(self.hood[4][4].population), 'monsters, will you attack or run?'
 			self.hood[4][4].show_monsters(self.hood[4][4])
 		if(location == [4, 5]):
-			if(self.hood[4][5].population[0].species == 'Healed'):
+			if(self.hood[4][5].population[0].species == 'HealedPerson'):
                                 print 'You enter a house filled with people!'
                         else:
                                 print 'You enter a house that is filled with', len(self.hood[4][5].population), 'monsters, will you attack or run?'
@@ -507,7 +574,7 @@ class Game():
 
 	
 ########################################################################################
-#main method
+#main method used to create an instance of the game and to print the intro messages.
 ########################################################################################
 if __name__=="__main__":
 	#create game
