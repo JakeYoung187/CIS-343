@@ -1,4 +1,4 @@
-import inspect
+#import inspect
 import random
 import re
 import sys
@@ -294,7 +294,6 @@ class House(Observable):
 			enemy = Monster(self.species[random.randint(0,4)])
 			self.population.append(enemy)
 			enemy.add_observer(self)
-		#print len(self.population)
 
 	##
 	#show_monsters displays the monsters currently in the house
@@ -318,7 +317,7 @@ class House(Observable):
 		pass
 	
 	##
-	#Getter and setter (MAY NOT EVEN BE NEEDED KINDA SEEMS STUPID
+	#Getter and setter
 	##
 	def get_population(self):
 		return self.population
@@ -411,8 +410,7 @@ class Game():
 			temp += house.get_monster(x).get_attack_value()
 		player.attack(house.get_population())
 		house.get_monster(x).attack(player, temp)
-		#population[x].attack(player, temp)
-
+		
 	##
 	#processes the command that the user enters
 	#@param cmd - the command entered

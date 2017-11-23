@@ -1,4 +1,5 @@
 # CIS-343
 
-Jake young
-python game
+Jacob Young (CIS 343)
+Python zork game
+(6x6 grid used)
