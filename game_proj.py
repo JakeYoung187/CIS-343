@@ -1,46 +1,11 @@
-#import inspect
+#imports for code
 import random
 import re
 import sys
 import os
-#from abc import ABCMeta, abstractmethod
+#imports for observable files
 from observable import Observable
 from observer import Observer
-
-##############################################################
-#The observer class is used to update observers when a change
-#of state takes place.
-#############################################################
-#class Observable(object):
- 
-#        def __init__(self):    
-#                self.observers = []
- 
-#        def add_observer(self, observer):
-#                if not observer in self.observers:
-#                        self.observers.append(observer)
- 
-#        def remove_observe(self, observer):
-#                if observer in self.observers:
-#                        self.observers.remove(observer)
- 
-#        def remove_all_observers(self):
-#                self.observers = []
- 
-#        def update(self):
-#                for observer in self.observers:
-#                        observer.update()
-
-
-#############################################################
-#The observer class is used to create observers
-#############################################################
-#class Observer(object):
-#	__metaclass__ = ABCMeta
-#
-#	@abstractmethod
-#	def update(self):
-#		pass
 
 
 #############################################################
@@ -255,7 +220,7 @@ class Monster(Observer):
 	#@param monster - the monster that has been destroyed
 	##
 	def change(self, monster):
-		monster.species = 'HealedPerson'
+		monster.species = 'Person'
 		monster.health = 100
 		monster.attack_value = -2
 	##
@@ -395,11 +360,9 @@ class Game():
 	#@param house - the house to be searched
 	##
 	def check_house(self, house):
-		for x in range(len(house.get_population())):
-			if(house.get_monster(x).get_species() is not 'HealedPerson'):
-				return 0
-		return 1
-	
+		return all( house.get_monster(0).get_species() == 'Person' for x in house.get_population() )
+
+
 	##
 	#fight loops attacks from both the player and the monster until
 	#the monsters are defeated or the players health reaches 0
@@ -423,13 +386,13 @@ class Game():
 			self.hero.show_inventory()
 		if(cmd == 'help'):
 			print '\nMovement commands: n(North), s(South), e(East), w(West)'
-			print '\nOther commands: quit, fight, heal (when in a healed house), i (to display inventory), and c (change equipped weapon)\n\n'
+			print '\nOther commands: quit, fight, (h)heal (when in a healed house), i (to display inventory), and c (change equipped weapon)\n\n'
 			print 'Attack monsters to turn them back into people, once you clear a house completely of monsters, you will be able to heal yourself using the \'heal\' command when inside of the house.'
 		if(cmd == 'quit'):
 			exit(0)
 		if(cmd == 'n' or cmd == 's' or cmd == 'e' or cmd == 'w'):
 			self.hero.move(cmd)
-		if(cmd == 'heal'):
+		if(cmd == 'h'):
 			if(isinstance(house, House)):
 				self.fight(self.hero, house)
 			else:
@@ -570,7 +533,7 @@ class Game():
 		for a in range(6):
 			for b in range(6):
 				if(isinstance(self.hood[a][b], House)):
-					if(self.check_house(self.hood[a][b]) is 1):
+					if(self.check_house(self.hood[a][b]) is True):
 						healed_houses += 1
 		if(healed_houses == 10):
 			self.end_of_game = 'win'
@@ -586,11 +549,11 @@ if __name__=="__main__":
 
 	#intro message and game start
 	print '\n\n********************************************************************************'
-	print 'Welcome to Short Gritty Coffin\n(Name credit to random word generator)\n\nWould you like to play? (y/n)'
+	print 'Welcome to Short Gritty Coffin\n(Name credit to random word generator)\n\nType \'start\' to begin!'
 	print '********************************************************************************'
 	answer = raw_input()
-	if(answer == 'y' or answer == 'Y'):
-		print '\nYou wake up out of your candy-induced coma in a detatched garage. All of your friends and family have been turned into a monsters by a bad batch of candy! You must fight to turn them back into the people they once were. There is some candy on the ground, you pick it up and put it into your pocket. (use the candy to attack monsters)\n'
+	if(answer == 'start'):
+		print '\nYou wake up out of your candy-induced coma in a detatched garage. All of your friends and family have been turned into a monsters by a bad batch of candy! You must fight to turn them back into the people they once were. There is some candy on the ground, you pick it up and put it into your pocket, use the candy to attack monsters. (type \'i\' for your inventory)\n'
 		#start game loop
 		game.play()
 		print 'Would you like to play again? (y/n)'
