@@ -4,6 +4,8 @@
 #############################################################
 class Observable(object):
 
+	observers = []
+
         def __init__(self):
                 self.observers = []
 
@@ -20,6 +22,6 @@ class Observable(object):
 
         def update(self):
                 for observer in self.observers:
-                        observer.update()
+			observer.update()
 
 
