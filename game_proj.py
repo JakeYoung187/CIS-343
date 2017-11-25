@@ -158,9 +158,8 @@ class Player:
 				self.equipped_weapon.set_num_uses(num - 1)
 				if(self.equipped_weapon.get_num_uses() == 0):
 					self.drop_weapon(self.equipped_weapon)
-		print '1'
+		#house.get_monster(0).update()
 		house.update()
-		#monster[0].update()
 
 	##
 	#Getters and setters
@@ -264,7 +263,7 @@ class House(Observer):
 		for x in range(random.randint(1, 5)):
 			enemy = Monster(self.species[random.randint(0,4)])
 			self.population.append(enemy)
-			enemy.add_observer(self)
+			#enemy.add_observer(self)
 
 	##
 	#show_monsters displays the monsters currently in the house
@@ -282,7 +281,6 @@ class House(Observer):
 	#method for observer pattern
 	##
 	def update(self):
-		print 'asdf'
 		for x in range(len(self.population)):
 			self.population[x] = Monster('Person')
 	
@@ -307,7 +305,7 @@ class Game(Observer):
 	hero = Player()
         hood = [[0 for i in range(6)] for j in range(6)]
 	end_of_game = 'false'
-	healed_houses = 0
+	#healed_houses = 0
 	def __init__(self):
 		#placing houses (10)
 		self.hood[0][5] = House()
@@ -384,8 +382,10 @@ class Game(Observer):
 		for x in range(len(house.get_population())):
 			temp += house.get_monster(x).get_attack_value()
 			#house.get_monster(x).attack(player, temp)
+		
 		player.attack(house)
 		house.get_monster(0).attack(player, temp)
+		#aaaaa
 		#house.get_monster(0).update()
 
 	##
@@ -538,16 +538,16 @@ class Game(Observer):
 	#game_over checks the status of the game to see if it should end
 	##
 	def game_over(self):
-		#healed_houses = 0
+		healed_houses = 0
 		if(self.hero.get_health() <= 0):
 			self.end_of_game = 'loss'
 			
-		#for a in range(6):
-		#	for b in range(6):
-		#		if(isinstance(self.hood[a][b], House)):
-		#			if(self.check_house(self.hood[a][b]) is True):
-		#				healed_houses += 1
-		if(self.healed_houses == 10):
+		for a in range(6):
+			for b in range(6):
+				if(isinstance(self.hood[a][b], House)):
+					if(self.check_house(self.hood[a][b]) is True):
+						healed_houses += 1
+		if(healed_houses == 10):
 			self.end_of_game = 'win'
 	
 
