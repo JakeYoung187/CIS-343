@@ -98,27 +98,39 @@ class Game():
 	def process_command(self, cmd, house):
 		if(cmd == 'i'):
 			self.hero.show_inventory()
+			return
 		if(cmd == 'help'):
 			print '\nMovement commands: n(North), s(South), e(East), w(West)'
 			print '\nOther commands: quit, fight, (h)heal (when in a healed house), i (to display inventory), and c (change equipped weapon)\n\n'
 			print 'Attack monsters to turn them back into people, once you clear a house completely of monsters, you will be able to heal yourself using the \'heal\' command when inside of the house.'
+			return
 		if(cmd == 'quit'):
 			exit(0)
+			return
 		if(cmd == 'n' or cmd == 's' or cmd == 'e' or cmd == 'w'):
 			self.hero.move(cmd)
+			return
 		if(cmd == 'h'):
 			if(isinstance(house, House)):
 				self.fight(self.hero, house)
+				return
 			else:
 				return
-		if(cmd == 'fight'):
+		if(cmd == 'fight' or cmd == 'attack'):
 			if(isinstance(house, House)):
 				self.fight(self.hero, house)
+				return
 			else:
 				return
 		split_cmd = re.split('\s+', cmd)
 		if(split_cmd[0] == 'c'):
 			self.hero.equip_weapon(split_cmd[1])
+			return
+		else:
+			print '***********************'
+			print 'Command not recognized'
+			print '***********************'
+			return
 
 	##
 	#displays the message to inform the player of their current location
