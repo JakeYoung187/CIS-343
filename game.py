@@ -10,33 +10,24 @@ import re
 #@var hood - the 'neighborhood' or grid of houses
 #@var end_of_game - variable to show games progress
 ########################################################################
-class Game(Observer):
+class Game():
 	hero = Player()
         hood = [[0 for i in range(6)] for j in range(6)]
 	end_of_game = 'false'
-	#healed_houses = 0
+	monsters_left = 0
 	def __init__(self):
 		#placing houses (10)
 		self.hood[0][5] = House()
-		#self.hood[0][5].add_observer(Game)
 		self.hood[1][0] = House()
-		#self.hood[1][0].add_observer(Game)
 		self.hood[1][5] = House()
-		#self.hood[1][5].add_observer(Game)
 		self.hood[2][5] = House()
-		#self.hood[2][5].add_observer(Game)
 		self.hood[2][0] = House()
-		#self.hood[2][0].add_observer(Game)
 		self.hood[3][0] = House()
-		#self.hood[3][0].add_observer(Game)
 		self.hood[4][0] = House()
-		#self.hood[4][0].add_observer(Game)
 		self.hood[4][1] = House()
-		#self.hood[4][1].add_observer(Game)
 		self.hood[4][4] = House()
-		#self.hood[4][4].add_observer(Game)
 		self.hood[4][5] = House()
-		#self.hood[4][5].add_observer(Game)
+		self.total_monsters()
 		
 	##
 	#play creates the loop to accept commands from the user
@@ -47,6 +38,7 @@ class Game(Observer):
 			print '\n**Type help for a list of commands**'
 			print 'Health:', self.hero.get_health()
 			print 'Equipped Candy:', self.hero.get_equipped_weapon().get_weapon_name()
+			print 'Monsters left: ', self.monsters_left
 			command = raw_input()
 			#not sure if this is bad practice
 			x = self.hero.get_current_location()[0]
@@ -66,20 +58,23 @@ class Game(Observer):
 			print 'You have saved the neighborhood from the candy plague that had taken them over'
 
 	##
-	#check_house loops through house population to see if any monsters
-	#are still unturned (used for end of game checks)
-	#@param house - the house to be searched
+	#total_monsters calculates the number of monsters spawned in the game
 	##
-	def check_house(self, house):
-		return all( house.get_monster(0).get_species() == 'Person' for x in house.get_population() )
-
+	def total_monsters(self):
+		self.monsters_left = 0
+		for a in range(6):
+			for b in range(6):
+				if(isinstance(self.hood[a][b], House)):
+					self.monsters_left += self.hood[a][b].get_num_monsters()
 
 	##
-	def update(self):
-		print 'here'
-		healed_houses += 1
-
-
+	#Getters and setters
+	##
+	def get_monsters_left():
+		return self.monsters_left
+	def set_monsters_left(x):
+		self.monsters_left = x
+	
 	##
 	#fight loops attacks from both the player and the monster until
 	#the monsters are defeated or the players health reaches 0
@@ -90,12 +85,10 @@ class Game(Observer):
 		temp = 0
 		for x in range(len(house.get_population())):
 			temp += house.get_monster(x).get_attack_value()
-			#house.get_monster(x).attack(player, temp)
 		
 		player.attack(house)
 		house.get_monster(0).attack(player, temp)
-		#aaaaa
-		#house.get_monster(0).update()
+		self.total_monsters()
 
 	##
 	#processes the command that the user enters
@@ -247,16 +240,8 @@ class Game(Observer):
 	#game_over checks the status of the game to see if it should end
 	##
 	def game_over(self):
-		healed_houses = 0
 		if(self.hero.get_health() <= 0):
 			self.end_of_game = 'loss'
-			
-		for a in range(6):
-			for b in range(6):
-				if(isinstance(self.hood[a][b], House)):
-					if(self.check_house(self.hood[a][b]) is True):
-						healed_houses += 1
-		if(healed_houses == 10):
-			self.end_of_game = 'win'
-	
 
+		if(self.monsters_left == 0):
+			self.end_of_game = 'win'	

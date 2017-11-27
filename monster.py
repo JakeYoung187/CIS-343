@@ -12,7 +12,9 @@ class Monster(Observable):
 	health = 0
 	species = ''
 	attack_value = 0
-	def __init__(self, species):
+	def __init__(self, species, house):
+		super(Monster, self).__init__()
+		self.add_observer(house)
 		self.species = species
 		if(species == 'Zombie'):
 			self.health = random.randint(50, 100)
@@ -42,17 +44,16 @@ class Monster(Observable):
 	#change creates the healed people after a monster is destroyed
 	#@param monster - the monster that has been destroyed
 	##
-#	def change(self, monster):
-#		monster.species = 'Person'
-#		monster.health = 100
-#		monster.attack_value = -2
+	def change(self, monster):
+		monster.species = 'Person'
+		monster.health = 100
+		monster.attack_value = -2
 	##
 	#methods for Observer pattern
 	##
-	#def update(self, monsters):
-	#	pass
-	#def add_observer(self, observer):
-	#	pass
+	def update(self):
+		for observer in self.observers:
+			observer.update(self.species)
 	
 	##
 	#Getters and setters
@@ -61,6 +62,10 @@ class Monster(Observable):
 		return self.health
 	def set_health(self, health):
 		self.health = health
+		if(self.health <= 0):
+			if(self.species is not 'Person'):
+				self.update()
+	
 	def get_attack_value(self):
 		return self.attack_value
 	def set_attack_value(self, atk):

@@ -9,15 +9,16 @@ import random
 #@var species - a list of monster species for random selection
 ###########################################################################
 class House(Observer):
+	num_monsters = 0
 	population = 'empty'
 	species = ['Zombie', 'Vampire', 'Ghoul', 'Werewolf', 'Person']
 	def __init__(self):
-		#super(House, self).__init__()
 		self.population = []
 		for x in range(random.randint(1, 5)):
-			enemy = Monster(self.species[random.randint(0,4)])
+			enemy = Monster(self.species[random.randint(0,4)], self)
 			self.population.append(enemy)
-			#enemy.add_observer(self)
+			if(enemy.get_species() is not 'Person'):
+				self.num_monsters += 1
 
 	##
 	#show_monsters displays the monsters currently in the house
@@ -34,9 +35,14 @@ class House(Observer):
 	##
 	#method for observer pattern
 	##
-	def update(self):
-		for x in range(len(self.population)):
-			self.population[x] = Monster('Person')
+	def update(self, monster):
+		for monsters in self.population:
+			print 'here'
+			if monsters.get_species() is monster:
+				print monsters
+				monsters.change(monsters)
+				self.num_monsters -= 1
+				break
 	
 	##
 	#Getter and setter
@@ -47,5 +53,8 @@ class House(Observer):
 		return self.population[x]
 	def set_monster(self, x, monster):
 		self.population[x] = monster
-
+	def get_num_monsters(self):
+		return self.num_monsters
+	def set_num_monsters(self, num):
+		self.num_monsters = num
 

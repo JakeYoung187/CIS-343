@@ -17,8 +17,7 @@ class Player:
 	items = []
 	current_location = 0
 	def __init__(self):
-		#self.health = random.randint(100, 125)
-		self.health = 6000
+		self.health = random.randint(100, 125)
 		self.attack_value = random.randint(5, 20)
 		self.current_location = [0, 0]
 		HersheyKiss = Weapon('HersheyKiss', 1, -1)
@@ -78,6 +77,7 @@ class Player:
 	
 	##
 	#show_inventory prints a list of the players remaining weapons
+	#(used for 'i' command)
 	##
 	def show_inventory(self):
 		print 'Weapons:'
@@ -116,13 +116,11 @@ class Player:
 			while(house.get_monster(i).get_health() > 0):
 				health = house.get_monster(i).get_health()
 				house.get_monster(i).set_health(health - power)
-			if(house.get_monster(i).get_species() != 'Person'):
-				num = self.equipped_weapon.get_num_uses() 
-				self.equipped_weapon.set_num_uses(num - 1)
-				if(self.equipped_weapon.get_num_uses() == 0):
-					self.drop_weapon(self.equipped_weapon)
-		#house.get_monster(0).update()
-		house.update()
+		num = self.equipped_weapon.get_num_uses() 
+		self.equipped_weapon.set_num_uses(num - 1)
+		if(self.equipped_weapon.get_num_uses() == 0):
+			self.drop_weapon(self.equipped_weapon)
+		
 
 	##
 	#Getters and setters
