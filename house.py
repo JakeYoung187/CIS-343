@@ -37,9 +37,7 @@ class House(Observer):
 	##
 	def update(self, monster):
 		for monsters in self.population:
-			print 'here'
 			if monsters.get_species() is monster:
-				print monsters
 				monsters.change(monsters)
 				self.num_monsters -= 1
 				break

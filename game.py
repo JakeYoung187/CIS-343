@@ -33,7 +33,7 @@ class Game():
 	#play creates the loop to accept commands from the user
 	##
 	def play(self):
-		print '\nThere are walls all around you, but an open door in front of you. Where would you like to go?\n'
+		print '\n\nThere are walls all around you, but an open door in front of you. Where would you like to go?\n'
 		while(self.end_of_game is 'false'):
 			print '\n**Type help for a list of commands**'
 			print 'Health:', self.hero.get_health()
